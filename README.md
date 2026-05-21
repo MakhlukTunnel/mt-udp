@@ -7,8 +7,8 @@
 </p>
 
 <p align="center">
-  <b>High Performance UDP Proxy Server</b><br>
-  Built with <b>Hysteria</b>, <b>QUIC/HTTP3</b>, and <b>gRPC</b>
+  <b>High Performance UDP over QUIC Tunnel Server</b><br>
+  Built with <b>Hysteria Core</b>, <b>QUIC/HTTP3</b>, and <b>gRPC</b>
 </p>
 
 <p align="center">
@@ -34,29 +34,28 @@
 
 ### 🔒 Security
 - Salamander obfuscation
-- TLS support
+- TLS with SNI check
 - DPI bypass support
 - Multi-user authentication
 
 </td>
 </tr>
-
 <tr>
 <td width="50%">
 
 ### 👥 User Management
-- Password authentication
-- Username/password mode
+- Password & Userpass modes
+- Expiry date support
 - Lock & unlock users
-- Force disconnect support
+- Force disconnect on changes
 
 </td>
 <td width="50%">
 
 ### 📊 Monitoring
 - Real-time bandwidth stats
-- Active stream monitoring
 - Online user tracking
+- Active connection monitoring
 - gRPC API integration
 
 </td>
@@ -65,20 +64,21 @@
 
 ---
 
-# 📖 Introduction
+## 📖 Introduction
 
-**Mt-UDP** adalah high-performance UDP proxy server berbasis **Hysteria** yang dirancang untuk koneksi cepat, stabil, dan efisien.
+**Mt-UDP** adalah high-performance UDP tunnel server berbasis **QUIC** yang dirancang untuk koneksi cepat, stabil, dan efisien.
 
 Server ini mendukung:
 
-- ⚡ QUIC/HTTP3
-- 🔐 Obfuscation
-- 👥 Multi-user authentication
-- 📊 gRPC monitoring
+- ⚡ QUIC/HTTP3 transport
+- 🔐 Salamander obfuscation
+- 👥 Multi-user authentication (passwords / userpass)
+- 📊 gRPC monitoring API
 - 🛡️ Force disconnect management
+- ⏰ Expiry date per user
 
 Cocok digunakan untuk:
-- client apk Zivpn, dan sejenisnya.
+- Client APK Zivpn dan sejenisnya
 - VPS tunneling
 - Anti-DPI bypass
 - Gaming proxy
@@ -86,59 +86,38 @@ Cocok digunakan untuk:
 
 ---
 
-# 🚀 Quick Start
+## ⚙️ Configuration
 
-## 1️⃣ Download Binary
-
-### Linux AMD64
-
-```bash
-wget -O mt-udp \
-https://github.com/MakhlukTunnel/mt-udp/releases/latest/download/udp-linux-amd64
-
-chmod +x mt-udp
-```
-
-### Linux ARM64
-
-```bash
-wget -O mt-udp \
-https://github.com/MakhlukTunnel/mt-udp/releases/latest/download/udp-linux-arm64
-
-chmod +x mt-udp
-```
-
----
-
-# ⚙️ Basic Configuration
-
-Buat file `config.json`
+### Basic Configuration (Userpass Mode)
 
 ```json
 {
-  "listen": ":443",
-
+  "listen": ":5667",
   "tls": {
     "cert": "/path/to/cert.pem",
     "key": "/path/to/key.pem",
-    "sniGuard": "default"
+    "sniCheck": "default"
   },
-
   "obfs": {
     "type": "salamander",
     "salamander": {
-      "password": "default"
+      "password": "zivpn"
     }
   },
-
   "auth": {
-    "type": "passwords",
-    "passwords": [
-      "password1",
-      "password2"
-    ]
+    "type": "userpass",
+    "userpass": {
+      "username1": {
+        "password": "pass123",
+        "exp_date": "2025-12-31 23:59:59",
+        "status": "active"
+      },
+      "username2": {
+        "password": "pass456",
+        "status": "active"
+      }
+    }
   },
-
   "trafficStats": {
     "type": "grpc",
     "listen": "127.0.0.1:998"
@@ -146,21 +125,43 @@ Buat file `config.json`
 }
 ```
 
+Passwords Mode
+
+```json
+{
+  "auth": {
+    "type": "passwords",
+    "passwords": [
+      {
+        "password": "pass123",
+        "exp_date": "2025-12-31 23:59:59",
+        "status": "active"
+      },
+      {
+        "password": "pass456",
+        "status": "active"
+      }
+    ]
+  }
+}
+```
+
+
 ---
 
-# ▶️ Run Server
+▶️ Run Server
 
 ```bash
 ./mt-udp server -c config.json
 ```
 
-## Debug Mode
+Debug Mode
 
 ```bash
 ./mt-udp server -c config.json -l debug
 ```
 
-## JSON Log Format
+JSON Log Format
 
 ```bash
 ./mt-udp server -c config.json -l info -f json
@@ -168,36 +169,37 @@ Buat file `config.json`
 
 ---
 
-# 🔐 Authentication Modes
+🔐 Authentication Modes
 
-| Mode | Description | Example |
-|------|-------------|----------|
-| `passwords` | Password only | `"passwords": ["mt1", "user1"]` |
-| `userpass` | Username + password | `"userpass": {"alice":"alice123"}` |
+Mode Description Example
+passwords Password only (auto-generated user IDs) "passwords": [{"password":"mt1"}]
+userpass Username + password (case-sensitive) "userpass": {"alice":{"password":"123"}}
 
----
+Expiry Date Format
 
-# 🛡️ Obfuscation
+```
+YYYY-MM-DD HH:MM:SS
+```
 
-| Type | Description |
-|------|-------------|
-| `plain` | No obfuscation |
-| `salamander` | Password-based obfuscation |
+Example: 2025-12-31 23:59:59
 
----
+Status Values
 
-# 🔒 TLS SNI Guard
-
-| Mode | Description |
-|------|-------------|
-| `default` | Default validation |
-| `dns-san` | DNS SAN validation |
-| `strict` | Strict validation |
-| `disable` | Disable validation |
+Status Description
+active User can connect
+locked User blocked from connecting
 
 ---
 
-# 🔌 gRPC API
+🛡️ Obfuscation
+
+Type Description
+plain No obfuscation
+salamander Password-based obfuscation (default)
+
+---
+
+🔌 gRPC API
 
 Default gRPC server:
 
@@ -205,128 +207,176 @@ Default gRPC server:
 127.0.0.1:998
 ```
 
-Tersedia 2 service utama:
+📊 TrafficService
+
+Method Description
+GetStats Get TX/RX bandwidth per user
+GetOnlineUsers Get online users & client IPs
+
+👥 AuthService
+
+Method Description
+AddUser Add new user with expiry date
+RemoveUser Remove user + force disconnect
+UpdatePassword Update password + force disconnect
+UpdateExpiry Update expiry date
+LockUser Lock user + force disconnect
+UnlockUser Unlock user
+GetUsers List users (single or all)
 
 ---
 
-## 📊 TrafficService
+🧪 gRPC Examples
 
-| Method | Description |
-|--------|-------------|
-| `GetStats` | Get TX/RX bandwidth per user |
-| `GetOnlineUsers` | Get online users & client IP |
-| `GetStreams` | Get active stream details |
-
----
-
-## 👥 AuthService
-
-| Method | Description |
-|--------|-------------|
-| `AddUser` | Add new user |
-| `RemoveUser` | Remove user + force disconnect |
-| `UpdatePassword` | Update password + force disconnect |
-| `LockUser` | Lock user + force disconnect |
-| `UnlockUser` | Unlock user |
-| `GetUserStatus` | Get user status |
-| `ListUsers` | List all users |
-
----
-
-# 🧪 gRPC Examples
-
-## Install grpcurl
+Install grpcurl
 
 ```bash
 go install github.com/fullstorydev/grpcurl/cmd/grpcurl@latest
 ```
 
+Get Stats
+
+```bash
+grpcurl -plaintext \
+  -d '{"auth":"username:password"}' \
+  localhost:998 \
+  traffic.TrafficService/GetStats
+```
+
+Get Online Users
+
+```bash
+grpcurl -plaintext \
+  -d '{"auth":"username:password"}' \
+  localhost:998 \
+  traffic.TrafficService/GetOnlineUsers
+```
+
+Add User
+
+```bash
+grpcurl -plaintext \
+  -d '{"id":"newuser","password":"pass123","exp_date":"2025-12-31 23:59:59"}' \
+  localhost:998 \
+  traffic.AuthService/AddUser
+```
+
+Lock User
+
+```bash
+grpcurl -plaintext \
+  -d '{"auth":"admin:adminpass"}' \
+  localhost:998 \
+  traffic.AuthService/LockUser
+```
+
+Unlock User
+
+```bash
+grpcurl -plaintext \
+  -d '{"auth":"admin:adminpass"}' \
+  localhost:998 \
+  traffic.AuthService/UnlockUser
+```
+
+Update Password
+
+```bash
+grpcurl -plaintext \
+  -d '{"auth":"username:oldpass","password":"newpass"}' \
+  localhost:998 \
+  traffic.AuthService/UpdatePassword
+```
+
+Update Expiry
+
+```bash
+grpcurl -plaintext \
+  -d '{"auth":"username:password","exp_date":"2026-01-01 00:00:00"}' \
+  localhost:998 \
+  traffic.AuthService/UpdateExpiry
+```
+
+Get All Users
+
+```bash
+grpcurl -plaintext \
+  -d '{"auth":"admin:adminpass"}' \
+  localhost:998 \
+  traffic.AuthService/GetUsers
+```
+
+Remove User
+
+```bash
+grpcurl -plaintext \
+  -d '{"auth":"admin:adminpass"}' \
+  localhost:998 \
+  traffic.AuthService/RemoveUser
+```
+
 ---
 
-## Get Stats
+🔧 Systemd Service
 
 ```bash
-grpcurl -plaintext \
--d '{"auth":"mt1"}' \
-localhost:998 \
-traffic.TrafficService/GetStats
+cat > /etc/systemd/system/mt-udp.service << 'EOF'
+[Unit]
+Description=Mt-UDP Server
+After=network.target
+
+[Service]
+Type=simple
+ExecStart=/usr/local/bin/mt-udp server -c /etc/mt-udp/config.json
+Restart=always
+RestartSec=5
+
+[Install]
+WantedBy=multi-user.target
+EOF
+
+systemctl daemon-reload
+systemctl enable mt-udp
+systemctl start mt-udp
 ```
 
-## Get Online Users
+---
+
+📁 Directory Structure
+
+```
+/etc/mt-udp/
+├── config.json          # Main configuration
+├── geoip.dat           # GeoIP database (auto-download)
+└── geosite.dat         # GeoSite database (auto-download)
+```
+
+---
+
+🐛 Troubleshooting
 
 ```bash
-grpcurl -plaintext \
--d '{"auth":"mt1"}' \
-localhost:998 \
-traffic.TrafficService/GetOnlineUsers
+# Check logs
+journalctl -u mt-udp -f
+
+# Check service status
+systemctl status mt-udp
 ```
 
-## Lock User
+---
 
-```bash
-grpcurl -plaintext \
--d '{"auth":"mt1"}' \
-localhost:998 \
-traffic.AuthService/LockUser
-```
+📄 License
 
-## Unlock User
-
-```bash
-grpcurl -plaintext \
--d '{"auth":"mt1"}' \
-localhost:998 \
-traffic.AuthService/UnlockUser
-```
-
-## Update Password
-
-```bash
-grpcurl -plaintext \
--d '{"auth":"mt1","new_password":"newpass123"}' \
-localhost:998 \
-traffic.AuthService/UpdatePassword
-```
-
-## Get User Status
-
-```bash
-grpcurl -plaintext \
--d '{"auth":"newpass123"}' \
-localhost:998 \
-traffic.AuthService/GetUserStatus
-```
-
-## Remove User
-
-```bash
-grpcurl -plaintext \
--d '{"auth":"mt1"}' \
-localhost:998 \
-traffic.AuthService/RemoveUser
-```
-
-## List All Users
-
-```bash
-grpcurl -plaintext \
-localhost:998 \
-traffic.AuthService/ListUsers
-```
-
-# 📄 License
-
-This project uses a **Proprietary License**.
+This project uses a Proprietary License.
 
 Please ensure you have a valid license before deploying or distributing this software.
 
 ---
 
-# 🙏 Credits
+🙏 Credits
 
-- Hysteria
-- QUIC-Go
-- gRPC-Go
+· QUIC-Go
+· gRPC-Go
 
 ---
 
