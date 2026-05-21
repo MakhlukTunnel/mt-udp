@@ -34,7 +34,7 @@
 
 ### 🔒 Security
 - Salamander obfuscation
-- TLS with SNI check
+- TLS with SNI check 
 - DPI bypass support
 - Multi-user authentication
 
@@ -90,8 +90,7 @@ Cocok digunakan untuk:
 
 ### Basic Configuration (Userpass Mode)
 
-```json
-{
+<pre>{
   "listen": ":5667",
   "tls": {
     "cert": "/path/to/cert.pem",
@@ -122,13 +121,11 @@ Cocok digunakan untuk:
     "type": "grpc",
     "listen": "127.0.0.1:998"
   }
-}
-```
+}</pre>
 
 Passwords Mode
 
-```json
-{
+<pre>{
   "auth": {
     "type": "passwords",
     "passwords": [
@@ -143,29 +140,21 @@ Passwords Mode
       }
     ]
   }
-}
-```
-
+}</pre>
 
 ---
 
 ▶️ Run Server
 
-```bash
-./mt-udp server -c config.json
-```
+<pre>./mt-udp server -c config.json</pre>
 
 Debug Mode
 
-```bash
-./mt-udp server -c config.json -l debug
-```
+<pre>./mt-udp server -c config.json -l debug</pre>
 
 JSON Log Format
 
-```bash
-./mt-udp server -c config.json -l info -f json
-```
+<pre>./mt-udp server -c config.json -l info -f json</pre>
 
 ---
 
@@ -177,9 +166,7 @@ userpass Username + password (case-sensitive) "userpass": {"alice":{"password":"
 
 Expiry Date Format
 
-```
-YYYY-MM-DD HH:MM:SS
-```
+<pre>YYYY-MM-DD HH:MM:SS</pre>
 
 Example: 2025-12-31 23:59:59
 
@@ -203,9 +190,7 @@ salamander Password-based obfuscation (default)
 
 Default gRPC server:
 
-```text
-127.0.0.1:998
-```
+<pre>127.0.0.1:998</pre>
 
 📊 TrafficService
 
@@ -230,97 +215,76 @@ GetUsers List users (single or all)
 
 Install grpcurl
 
-```bash
-go install github.com/fullstorydev/grpcurl/cmd/grpcurl@latest
-```
+<pre>go install github.com/fullstorydev/grpcurl/cmd/grpcurl@latest</pre>
 
 Get Stats
 
-```bash
-grpcurl -plaintext \
+<pre>grpcurl -plaintext \
   -d '{"auth":"username:password"}' \
   localhost:998 \
-  traffic.TrafficService/GetStats
-```
+  traffic.TrafficService/GetStats</pre>
 
 Get Online Users
 
-```bash
-grpcurl -plaintext \
+<pre>grpcurl -plaintext \
   -d '{"auth":"username:password"}' \
   localhost:998 \
-  traffic.TrafficService/GetOnlineUsers
-```
+  traffic.TrafficService/GetOnlineUsers</pre>
 
 Add User
 
-```bash
-grpcurl -plaintext \
+<pre>grpcurl -plaintext \
   -d '{"id":"newuser","password":"pass123","exp_date":"2025-12-31 23:59:59"}' \
   localhost:998 \
-  traffic.AuthService/AddUser
-```
+  traffic.AuthService/AddUser</pre>
 
 Lock User
 
-```bash
-grpcurl -plaintext \
+<pre>grpcurl -plaintext \
   -d '{"auth":"admin:adminpass"}' \
   localhost:998 \
-  traffic.AuthService/LockUser
-```
+  traffic.AuthService/LockUser</pre>
 
 Unlock User
 
-```bash
-grpcurl -plaintext \
+<pre>grpcurl -plaintext \
   -d '{"auth":"admin:adminpass"}' \
   localhost:998 \
-  traffic.AuthService/UnlockUser
-```
+  traffic.AuthService/UnlockUser</pre>
 
 Update Password
 
-```bash
-grpcurl -plaintext \
+<pre>grpcurl -plaintext \
   -d '{"auth":"username:oldpass","password":"newpass"}' \
   localhost:998 \
-  traffic.AuthService/UpdatePassword
-```
+  traffic.AuthService/UpdatePassword</pre>
 
 Update Expiry
 
-```bash
-grpcurl -plaintext \
+<pre>grpcurl -plaintext \
   -d '{"auth":"username:password","exp_date":"2026-01-01 00:00:00"}' \
   localhost:998 \
-  traffic.AuthService/UpdateExpiry
-```
+  traffic.AuthService/UpdateExpiry</pre>
 
 Get All Users
 
-```bash
-grpcurl -plaintext \
+<pre>grpcurl -plaintext \
   -d '{"auth":"admin:adminpass"}' \
   localhost:998 \
-  traffic.AuthService/GetUsers
-```
+  traffic.AuthService/GetUsers</pre>
 
 Remove User
 
-```bash
-grpcurl -plaintext \
+<pre>grpcurl -plaintext \
   -d '{"auth":"admin:adminpass"}' \
   localhost:998 \
-  traffic.AuthService/RemoveUser
-```
+  traffic.AuthService/RemoveUser</pre>
 
 ---
 
 🔧 Systemd Service
 
-```bash
-cat > /etc/systemd/system/mt-udp.service << 'EOF'
+<pre>cat > /etc/systemd/system/mt-udp.service << 'EOF'
 [Unit]
 Description=Mt-UDP Server
 After=network.target
@@ -337,31 +301,26 @@ EOF
 
 systemctl daemon-reload
 systemctl enable mt-udp
-systemctl start mt-udp
-```
+systemctl start mt-udp</pre>
 
 ---
 
 📁 Directory Structure
 
-```
-/etc/mt-udp/
+<pre>/etc/mt-udp/
 ├── config.json          # Main configuration
 ├── geoip.dat           # GeoIP database (auto-download)
-└── geosite.dat         # GeoSite database (auto-download)
-```
+└── geosite.dat         # GeoSite database (auto-download)</pre>
 
 ---
 
 🐛 Troubleshooting
 
-```bash
-# Check logs
+<pre># Check logs
 journalctl -u mt-udp -f
 
 # Check service status
-systemctl status mt-udp
-```
+systemctl status mt-udp</pre>
 
 ---
 
